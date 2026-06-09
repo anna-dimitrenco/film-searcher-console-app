@@ -4,15 +4,14 @@ from typing import Any
 from pymongo import DESCENDING, MongoClient
 
 
-class MongoDB:
-    DB_NAME: str = "ich_edit"          # Имя базы данных MongoDB
-    DEFAULT_LIMIT: int = 5             # Лимит по умолчанию для топ-запросов
+class MongoDB:            # Лимит по умолчанию для топ-запросов
 
-    def __init__(self, mongoconfig: str, collection_name: str) -> None:
+    def __init__(self, mongoconfig: dict) -> None:
         # Подключаемся к MongoDB и сразу проверяем соединение
-        self.client: MongoClient = MongoClient(mongoconfig)
+        self.client: MongoClient = MongoClient(mongoconfig["host"])
         self.client.admin.command("ping")
-        self.collection = self.client[MongoDB.DB_NAME][collection_name]
+        self.collection = self.client[mongoconfig["db_name"]][mongoconfig["collection"]]
+        self.default_limit = mongoconfig["default_limit"]
 
     def log_search(
         self, search_type: str, params: dict, results_count: int
@@ -33,11 +32,13 @@ class MongoDB:
             "results_count": results_count,
         })
 
-    def get_top_searches(self, limit: int = DEFAULT_LIMIT) -> list:
+    def get_top_searches(self, limit: int = 0) -> list:
         """Возвращает топ-N самых частых поисковых запросов (агрегация).
 
         :param limit: Количество записей для возврата.
         """
+        if limit == 0:
+            limit = self.default_limit
         pipeline: list[dict[str, Any]] = [
             {
                 "$group": {
@@ -47,6 +48,7 @@ class MongoDB:
                     },
                     "count": {"$sum": 1},
                     "last_searched": {"$max": "$timestamp"},
+                    "first_searched": {"$min": "$timestamp"},
                 }
             },
             {"$sort": {"count": DESCENDING}},
@@ -54,11 +56,13 @@ class MongoDB:
         ]
         return list(self.collection.aggregate(pipeline))
 
-    def get_recent_searches(self, limit: int = DEFAULT_LIMIT) -> list:
+    def get_recent_searches(self, limit: int = 0) -> list:
         """Возвращает N последних поисковых запросов по времени.
 
         :param limit: Количество записей для возврата.
         """
+        if limit == 0:
+            limit = self.default_limit
         return (
             list(
                 self.collection
