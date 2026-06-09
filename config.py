@@ -16,6 +16,9 @@ class Config:
         "database": secret["DB_DATABASE"],
     }
 
-    mongoconfig = secret["MONGO_URI"]
-
-    collection_name = secret["MONGO_COLLECTION"]
+    mongoconfig = {
+        "host": secret["MONGO_URI"],
+        "collection": secret["MONGO_COLLECTION"],
+        "db_name": secret["MONGO_DB_NAME"],
+        "default_limit": 5,
+    }
