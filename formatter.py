@@ -3,7 +3,6 @@ from datetime import datetime
 from rich.console import Console
 from rich.panel import Panel
 from rich.table import Table
-from rich.text import Text
 
 console = Console()
 
@@ -28,24 +27,8 @@ def print_menu() -> None:
     console.print(Panel(table, title="[bold]Меню[/bold]", expand=False))
 
 
-def print_success(message: str) -> None:
-    """Выводит сообщение об успехе зелёным цветом."""
-    console.print(f"[bold green]✔ {message}[/bold green]")
-
-
-def print_error(message: str) -> None:
-    """Выводит сообщение об ошибке красным цветом."""
-    console.print(f"[bold red]✘ {message}[/bold red]")
-
-
-def print_info(message: str) -> None:
-    """Выводит информационное сообщение."""
-    console.print(f"[bold cyan]{message}[/bold cyan]")
-
-
-def print_section(title: str) -> None:
-    """Выводит заголовок секции."""
-    console.rule(f"[bold cyan]{title}[/bold cyan]")
+def r_print(message: str, style: str, prefix: str = "") -> None:
+    console.print(f"[{style}]{prefix} {message}[/{style}]")
 
 
 def format_film_table(films: list[tuple], offset: int = 0) -> None:
@@ -101,9 +84,11 @@ def format_search_history_table(
 
     table = Table(show_header=True, header_style="bold cyan")
     table.add_column("Запрос")
-    table.add_column("Дата/время")
+    name_of_column = "Период" if show_count else "Дата последнего поиска"
+
+    table.add_column(name_of_column, justify="center")
     if show_count:
-        table.add_column("Кол-во", justify="right")
+        table.add_column("Кол-во запросов", justify="right")
 
     for entry in entries:
         # Поддержка формата get_top_searches (с _id) и get_recent_searches
@@ -119,12 +104,21 @@ def format_search_history_table(
             ts = entry.get("timestamp")
 
         desc = format_desc(search_type, params)
-        ts_str = ts.strftime("%d.%m.%Y %H:%M") if isinstance(
-            ts, datetime) else "—"
-
-        if show_count:
-            table.add_row(desc, ts_str, count)
+        if show_count and "_id" in entry:
+            first = entry.get("first_searched")
+            last = entry.get("last_searched")
+            if isinstance(first, datetime) and isinstance(last, datetime):
+                days = (last.date() - first.date()).days + 1
+                period_str = (
+                    f"{first.strftime('%d.%m.%Y')} – {last.strftime('%d.%m.%Y')}"
+                    f" ({days} дн.)"
+                )
+            else:
+                period_str = "—"
+            table.add_row(desc, period_str, count)
         else:
+            ts_str = ts.strftime("%d.%m.%Y %H:%M") if isinstance(
+                ts, datetime) else "—"
             table.add_row(desc, ts_str)
 
     console.print(table)
