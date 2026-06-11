@@ -4,8 +4,7 @@ from typing import Any
 from pymongo import DESCENDING, MongoClient
 
 
-class MongoDB:            # Лимит по умолчанию для топ-запросов
-
+class MongoDB:
     def __init__(self, mongoconfig: dict) -> None:
         # Подключаемся к MongoDB и сразу проверяем соединение
         self.client: MongoClient = MongoClient(mongoconfig["host"])
