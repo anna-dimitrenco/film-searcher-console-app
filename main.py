@@ -9,13 +9,13 @@ from mysql_connector import DB
 
 def main() -> None:
     try:
-        db = DB(Config.dbconfig)
+        db = DB(Config.db)
     except Exception as e:
         r_print(f"Не удалось подключиться к MySQL: {e}", "bold red", "✘")
         sys.exit(1)
 
     try:
-        logger = MongoDB(Config.mongoconfig)
+        logger = MongoDB(Config.mongo)
     except Exception as e:
         r_print(f"Не удалось подключиться к MongoDB: {e}", "bold red", "✘")
         sys.exit(1)
