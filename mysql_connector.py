@@ -33,10 +33,10 @@ class DB:
             results = cursor.fetchall()
             return len(results), list(results)
 
-    def search_by_genre_and_year(
+    def filter_by_genre_and_year(
         self, category_id: int, year_from: int, year_to: int
     ) -> tuple[int, list[tuple]]:
-        """Ищет фильмы по жанру и диапазону годов выпуска.
+        """Фильтрует фильмы по жанру и диапазону годов выпуска.
 
         :param category_id: ID жанра из таблицы category.
         :param year_from: Начальный год диапазона.
