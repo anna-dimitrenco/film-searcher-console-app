@@ -11,13 +11,11 @@ from mysql_connector import DB
 
 
 class Library:
-    PAGE_SIZE: int = 10  # Количество результатов на одну страницу
+    PAGE_SIZE: int = 10  
 
     def __init__(self, db: DB, logger: MongoDB) -> None:
         self.db = db
         self.logger = logger
-
-    # --- Главное меню ---
 
     def start_project(self) -> None:
         """Точка входа: приветствие и запуск главного меню."""
@@ -43,7 +41,7 @@ class Library:
         elif user_input == "1":
             self.search_by_keyword()
         elif user_input == "2":
-            self.search_by_genre_and_year()
+            self.filter_by_genre_and_year()
         elif user_input == "3":
             self.show_top_5_queries()
         else:
@@ -51,7 +49,6 @@ class Library:
             self.show_options_messages()
             self.handle_user_input(self.get_start_answer())
 
-    # --- Вспомогательный метод пагинации ---
 
     @staticmethod
     def paginate(titles: list[tuple], count: int) -> None:
@@ -75,7 +72,6 @@ class Library:
             else:
                 break
 
-    # --- Поиск по ключевому слову ---
     def search_by_keyword(self) -> None:
         """Поиск фильмов по ключевому слову в названии."""
         while True:
@@ -87,8 +83,8 @@ class Library:
         self.logger.log_search("keyword", {"keyword": keyword}, count)
         self.show_results(count, titles)
 
-    def search_by_genre_and_year(self) -> None:
-        """Поиск фильмов по жанру и диапазону годов выпуска."""
+    def filter_by_genre_and_year(self) -> None:
+        """Фильтрация фильмов по жанру и диапазону годов выпуска."""
         categories = self.show_categories()
         year_min, year_max = self.show_year_range()
         genre_result = self.ask_genre(categories)
@@ -103,7 +99,7 @@ class Library:
             return
         
         year_from, year_to = year_result
-        count, titles = self.db.search_by_genre_and_year(
+        count, titles = self.db.filter_by_genre_and_year(
             genre_id, year_from, year_to)
         
         self.logger.log_search(
