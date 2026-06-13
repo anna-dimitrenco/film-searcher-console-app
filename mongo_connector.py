@@ -1,12 +1,10 @@
 from datetime import datetime
 from typing import Any
-
 from pymongo import DESCENDING, MongoClient
-
 
 class MongoDB:
     def __init__(self, mongoconfig: dict) -> None:
-        # Подключаемся к MongoDB и сразу проверяем соединение
+        # Connect to MongoDB and immediately verify the connection
         self.client: MongoClient = MongoClient(mongoconfig["host"])
         self.client.admin.command("ping")
         self.collection = self.client[mongoconfig["db_name"]][mongoconfig["collection"]]
@@ -15,14 +13,14 @@ class MongoDB:
     def log_search(
         self, search_type: str, params: dict, results_count: int
     ) -> None:
-        """Сохраняет поисковый запрос в коллекцию MongoDB.
+        """Saves a search query to the MongoDB collection.
 
-        :param search_type: Тип запроса — "keyword" или "genre_year".
-        :param params: Параметры запроса:
+        :param search_type: Query type — "keyword" or "genre_year".
+        :param params: Query parameters:
             - keyword:    {"keyword": "matrix"}
             - genre_year: {"genre_id": 5, "genre_name": "Comedy",
                            "year_from": 2000, "year_to": 2010}
-        :param results_count: Количество найденных результатов.
+        :param results_count: Number of results found.
         """
         self.collection.insert_one({
             "timestamp": datetime.now(),
@@ -32,9 +30,9 @@ class MongoDB:
         })
 
     def get_top_searches(self, limit: int = 0) -> list:
-        """Возвращает топ-N самых частых поисковых запросов (агрегация).
+        """Returns the top-N most frequent search queries (aggregation).
 
-        :param limit: Количество записей для возврата.
+        :param limit: Number of records to return.
         """
         if limit == 0:
             limit = self.default_limit
@@ -56,9 +54,9 @@ class MongoDB:
         return list(self.collection.aggregate(pipeline))
 
     def get_recent_searches(self, limit: int = 0) -> list:
-        """Возвращает N последних поисковых запросов по времени.
+        """Returns the N most recent search queries by timestamp.
 
-        :param limit: Количество записей для возврата.
+        :param limit: Number of records to return.
         """
         if limit == 0:
             limit = self.default_limit
@@ -72,5 +70,5 @@ class MongoDB:
         )
 
     def __del__(self) -> None:
-        """Закрывает соединение с MongoDB при удалении объекта."""
+        """Closes the MongoDB connection when the object is destroyed."""
         self.client.close()
