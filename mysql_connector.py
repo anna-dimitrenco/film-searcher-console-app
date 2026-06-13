@@ -1,29 +1,28 @@
 import pymysql
 
-
 class DB:
     def __init__(self, dbconfig: dict) -> None:
-        # Открываем соединение с MySQL при создании экземпляра
+        # Open the MySQL connection when the instance is created
         self.connection = pymysql.connect(**dbconfig)
 
     def get_categories(self) -> tuple:
-        """Возвращает все жанры из таблицы category."""
+        """Returns all genres from the category table."""
         with self.connection.cursor() as cursor:
             cursor.execute("SELECT category_id, name FROM category")
             return cursor.fetchall()
 
     def get_year_range(self) -> tuple[int, int]:
-        """Возвращает минимальный и максимальный год выпуска фильмов."""
+        """Returns the minimum and maximum film release years."""
         with self.connection.cursor() as cursor:
             cursor.execute(
                 "SELECT MIN(release_year), MAX(release_year) FROM film")
             return cursor.fetchone()
 
     def search_by_title(self, film_title: str) -> tuple[int, list[tuple]]:
-        """Ищет фильмы по части названия.
+        """Searches for films by a partial title match.
 
-        :param film_title: Часть названия фильма.
-        :return: Кортеж (количество найденных, список кортежей (title, year, rating)).
+        :param film_title: Part of the film title.
+        :return: Tuple (count of results, list of tuples (title, year, rating)).
         """
         with self.connection.cursor() as cursor:
             cursor.execute(
@@ -36,12 +35,12 @@ class DB:
     def filter_by_genre_and_year(
         self, category_id: int, year_from: int, year_to: int
     ) -> tuple[int, list[tuple]]:
-        """Фильтрует фильмы по жанру и диапазону годов выпуска.
+        """Filters films by genre and release year range.
 
-        :param category_id: ID жанра из таблицы category.
-        :param year_from: Начальный год диапазона.
-        :param year_to: Конечный год диапазона.
-        :return: Кортеж (количество найденных, список кортежей (title, year, rating)).
+        :param category_id: Genre ID from the category table.
+        :param year_from: Start year of the range.
+        :param year_to: End year of the range.
+        :return: Tuple (count of results, list of tuples (title, year, rating)).
         """
         with self.connection.cursor() as cursor:
             sql = """
@@ -57,5 +56,5 @@ class DB:
             return len(results), list(results)
 
     def __del__(self) -> None:
-        """Закрывает соединение с базой данных при удалении объекта."""
+        """Closes the database connection when the object is destroyed."""
         self.connection.close()
